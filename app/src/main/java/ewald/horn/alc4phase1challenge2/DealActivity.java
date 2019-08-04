@@ -1,5 +1,6 @@
 package ewald.horn.alc4phase1challenge2;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.net.Uri;
@@ -15,8 +16,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.*;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.StorageReference;
@@ -30,7 +30,7 @@ public class DealActivity extends AppCompatActivity {
     private static final int PICTURE_RESULT = 42;
     ImageView imageView;
     TravelDeal deal;
-
+    final Context context = this;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -125,19 +125,41 @@ public class DealActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == PICTURE_RESULT && resultCode == RESULT_OK) {
             Uri imageUri = data.getData();
-            StorageReference ref = FirebaseUtil.storageRef.child(imageUri.getLastPathSegment());
-            ref.putFile(imageUri).addOnSuccessListener(this, new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            final StorageReference ref = FirebaseUtil.storageRef.child(imageUri.getLastPathSegment());
+            UploadTask uploadTask = ref.putFile(imageUri);
+            Task<Uri> urlTask = uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
                 @Override
-                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                    String url = taskSnapshot.getMetadata().getPath(); // TODO : Ewald Not sure about this one
-                    String pictureName = taskSnapshot.getStorage().getPath();
-                    deal.setImageUrl(url);
-                    deal.setImageName(pictureName);
-                    Log.d("Url: ", url);
-                    Log.d("Name", pictureName);
-                    showImage(url);
+                public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
+                    if (task.isSuccessful()) {
+                        return ref.getDownloadUrl();
+                    } else {
+                        throw task.getException();
+                    }
+                }
+            }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+                @Override
+                public void onComplete(@NonNull Task<Uri> task) {
+                    if (task.isSuccessful()) {
+                        deal.setImageUrl(task.getResult().toString());
+                        deal.setImageName(task.getResult().toString());
+                    } else {
+                        Toast.makeText(context, "Error uploading image to Firebase Storage", Toast.LENGTH_LONG).show();
+                    }
                 }
             });
+
+//            ref.putFile(imageUri).addOnSuccessListener(this, new OnSuccessListener<UploadTask.TaskSnapshot>() {
+//                @Override
+//                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+//                    String url = taskSnapshot.getMetadata().getPath(); // TODO : Ewald Not sure about this one
+//                    String pictureName = taskSnapshot.getStorage().getPath();
+//                    deal.setImageUrl(url);
+//                    deal.setImageName(pictureName);
+//                    Log.d("Url: ", url);
+//                    Log.d("Name", pictureName);
+//                    showImage(url);
+//                }
+//            });
 
         }
     }

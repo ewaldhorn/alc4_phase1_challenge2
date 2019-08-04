@@ -115,6 +115,7 @@ public class DealAdapter extends RecyclerView.Adapter<DealAdapter.DealViewHolder
 
         private void showImage(String url) {
             if (url != null && !url.isEmpty()) {
+                Log.d(">>>>", "We have an url of " + url);
                 Picasso.get()
                         .load(url)
                         .resize(160, 160)
