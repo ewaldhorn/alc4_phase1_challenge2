@@ -23,14 +23,15 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.squareup.picasso.Picasso;
 
+import java.util.Objects;
+
 public class DealActivity extends AppCompatActivity {
-    private FirebaseDatabase firebaseDatabase;
     private DatabaseReference databaseReference;
     private EditText textTitle, textDescription, textPrice;
     private static final int PICTURE_RESULT = 42;
-    ImageView imageView;
-    TravelDeal deal;
-    final Context context = this;
+    private ImageView imageView;
+    private TravelDeal deal;
+    private final Context context = this;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,7 +44,7 @@ public class DealActivity extends AppCompatActivity {
     }
 
     private void initDatabase() {
-        firebaseDatabase = FirebaseDatabase.getInstance();
+        FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
         databaseReference = firebaseDatabase.getReference().child("traveldeals");
     }
 
@@ -76,7 +77,7 @@ public class DealActivity extends AppCompatActivity {
                 Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                 intent.setType("image/jpeg");
                 intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
-                startActivityForResult(intent.createChooser(intent,
+                startActivityForResult(Intent.createChooser(intent,
                         "Insert Picture"), PICTURE_RESULT);
             }
         });
@@ -133,7 +134,7 @@ public class DealActivity extends AppCompatActivity {
                     if (task.isSuccessful()) {
                         return ref.getDownloadUrl();
                     } else {
-                        throw task.getException();
+                        throw Objects.requireNonNull(task.getException());
                     }
                 }
             }).addOnCompleteListener(new OnCompleteListener<Uri>() {
@@ -147,20 +148,6 @@ public class DealActivity extends AppCompatActivity {
                     }
                 }
             });
-
-//            ref.putFile(imageUri).addOnSuccessListener(this, new OnSuccessListener<UploadTask.TaskSnapshot>() {
-//                @Override
-//                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-//                    String url = taskSnapshot.getMetadata().getPath(); // TODO : Ewald Not sure about this one
-//                    String pictureName = taskSnapshot.getStorage().getPath();
-//                    deal.setImageUrl(url);
-//                    deal.setImageName(pictureName);
-//                    Log.d("Url: ", url);
-//                    Log.d("Name", pictureName);
-//                    showImage(url);
-//                }
-//            });
-
         }
     }
 
@@ -182,7 +169,7 @@ public class DealActivity extends AppCompatActivity {
         }
         databaseReference.child(deal.getId()).removeValue();
         Log.d("image name", deal.getImageName());
-        if (deal.getImageName() != null && deal.getImageName().isEmpty() == false) {
+        if (deal.getImageName() != null && !deal.getImageName().isEmpty()) {
             StorageReference picRef = FirebaseUtil.storage.getReference().child(deal.getImageName());
             picRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
                 @Override
@@ -217,7 +204,7 @@ public class DealActivity extends AppCompatActivity {
     }
 
     private void showImage(String url) {
-        if (url != null && url.isEmpty() == false) {
+        if (url != null && !url.isEmpty()) {
             int width = Resources.getSystem().getDisplayMetrics().widthPixels;
             Picasso.get()
                     .load(url)

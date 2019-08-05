@@ -14,24 +14,20 @@ import com.google.firebase.database.*;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class DealAdapter extends RecyclerView.Adapter<DealAdapter.DealViewHolder> {
-    ArrayList<TravelDeal> deals;
-    private FirebaseDatabase firebaseDatabase;
-    private DatabaseReference mDatabaseReference;
-    private ChildEventListener mChildListener;
+    private ArrayList<TravelDeal> deals;
     private ImageView imageDeal;
 
-    public DealAdapter() {
-        //FirebaseUtil.openFbReference("traveldeals");
-        firebaseDatabase = FirebaseUtil.firebaseDatabase;
-        mDatabaseReference = FirebaseUtil.databaseReference;
+    DealAdapter() {
+        DatabaseReference mDatabaseReference = FirebaseUtil.databaseReference;
         this.deals = FirebaseUtil.deals;
-        mChildListener = new ChildEventListener() {
+        ChildEventListener mChildListener = new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, String s) {
                 TravelDeal td = dataSnapshot.getValue(TravelDeal.class);
-                Log.d("Deal: ", td.getTitle());
+                Log.d("Deal: ", Objects.requireNonNull(td).getTitle());
                 td.setId(dataSnapshot.getKey());
                 deals.add(td);
                 notifyItemInserted(deals.size() - 1);
@@ -87,16 +83,16 @@ public class DealAdapter extends RecyclerView.Adapter<DealAdapter.DealViewHolder
         TextView tvDescription;
         TextView tvPrice;
 
-        public DealViewHolder(View itemView) {
+        DealViewHolder(View itemView) {
             super(itemView);
-            tvTitle = (TextView) itemView.findViewById(R.id.tvTitle);
-            tvDescription = (TextView) itemView.findViewById(R.id.tvDescription);
-            tvPrice = (TextView) itemView.findViewById(R.id.tvPrice);
-            imageDeal = (ImageView) itemView.findViewById(R.id.imageDeal);
+            tvTitle = itemView.findViewById(R.id.tvTitle);
+            tvDescription = itemView.findViewById(R.id.tvDescription);
+            tvPrice = itemView.findViewById(R.id.tvPrice);
+            imageDeal = itemView.findViewById(R.id.imageDeal);
             itemView.setOnClickListener(this);
         }
 
-        public void bind(TravelDeal deal) {
+        void bind(TravelDeal deal) {
             tvTitle.setText(deal.getTitle());
             tvDescription.setText(deal.getDescription());
             tvPrice.setText(deal.getPrice());

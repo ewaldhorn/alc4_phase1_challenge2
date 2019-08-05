@@ -18,7 +18,7 @@ import java.util.Arrays;
 import java.util.List;
 
 class FirebaseUtil {
-    static FirebaseDatabase firebaseDatabase;
+    private static FirebaseDatabase firebaseDatabase;
     static DatabaseReference databaseReference;
     private static FirebaseUtil firebaseUtil;
     private static FirebaseAuth firebaseAuth;
